@@ -1377,11 +1377,13 @@ function moyaUpdate(dt,t){const m=moya,mp=m.mesh.position,pl=me.mesh.position,dM
     else if(m.stealT>12){m.mode=null;m.fast=0}}
   if(m.mode==="dogprank")m.target=dog.mesh.position.clone().add(new THREE.Vector3(.9,0,.9));
   if(m.mode==="hide"&&rain<.25&&!m.target){m.mode=null;m.fast=0}
-  const speed=m.fast?6.4:3.2;const moving=walk(m,dt,speed,.1);
+  // follow the player: hop back quickly whenever she falls more than 6m behind
+  if(!m.mode&&dMe>6){const a=Math.atan2(mp.z-pl.z,mp.x-pl.x);m.target=new THREE.Vector3(pl.x+Math.cos(a)*1.8,0,pl.z+Math.sin(a)*1.8);m.fast=1;m.catchup=1}
+  const speed=m.fast?(m.catchup&&running?8.4:6.4):3.2;const moving=walk(m,dt,speed,.1);
   if(!moving&&!m.target&&m.mode){moyaArrive()}
-  if(!moving&&!m.mode){m.fast=0;m.t-=dt;if(m.t<=0){m.t=1.5+Math.random()*4;const r=Math.random();
-      if(r<.12)moyaDo("munch",false);else if(r<.2)moyaDo("groom",false);
-      else{const near=Math.random()<.6;const a=Math.random()*6.28,rr=near?2+Math.random()*3.5:6+Math.random()*16;const c=near?pl:new THREE.Vector3();m.target=new THREE.Vector3(c.x+Math.cos(a)*rr,0,c.z+Math.sin(a)*rr)}}}
+  if(!moving&&!m.mode){m.fast=0;m.catchup=0;m.t-=dt;if(m.t<=0){m.t=1.2+Math.random()*2.3;const r=Math.random();
+      if(r<.1)moyaDo("munch",false);else if(r<.17)moyaDo("groom",false);
+      else{const a=Math.random()*6.28,rr=Math.random()<.9?1.2+Math.random()*2:3+Math.random()*3;m.target=new THREE.Vector3(pl.x+Math.cos(a)*rr,0,pl.z+Math.sin(a)*rr)}}}
   if(moving){m.hop+=dt*(m.fast?13:9);const s=Math.abs(Math.sin(m.hop));m.pv.position.set(0,s*(m.fast?.22:.15),0);m.pv.rotation.set(-Math.cos(m.hop)*.18,0,0);earsAnim(t,s)}
   else{m.pv.position.set(0,0,0);m.pv.rotation.set(0,0,0);earsAnim(t,0)}
   mp.y=groundY(mp.x,mp.z);
